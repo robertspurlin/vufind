@@ -60,6 +60,54 @@ class RecordDataFormatterFactory
     }
 
     /**
+     * Get the callback function for processing authors.
+     *
+     * @return Callable
+     */
+    protected function getAuthorFunction()
+    {
+        return function ($data, $options) {
+            // Lookup array of singular/plural labels (note that Other is always
+            // plural right now due to lack of translation strings).
+            $labels = [
+                'primary' => ['Main Author', 'Main Authors'],
+                'corporate' => ['Corporate Author', 'Corporate Authors'],
+                'secondary' => ['Other Authors', 'Other Authors'],
+            ];
+            // Lookup array of schema labels.
+            $schemaLabels = [
+                'primary' => 'author',
+                'corporate' => 'creator',
+                'secondary' => 'contributor',
+            ];
+            // Lookup array of sort orders.
+            $order = ['primary' => 1, 'corporate' => 2, 'secondary' => 3];
+
+            // Sort the data:
+            $final = [];
+            foreach ($data as $type => $values) {
+                $final[] = [
+                    'label' => $labels[$type][count($values) == 1 ? 0 : 1],
+                    'values' => [$type => $values],
+                    'options' => [
+                        'pos' => $options['pos'] + $order[$type],
+                        'renderType' => 'RecordDriverTemplate',
+                        'template' => 'data-authors.phtml',
+                        'context' => [
+                            'type' => $type,
+                            'schemaLabel' => $schemaLabels[$type],
+                            'requiredDataFields' => [
+                                ['name' => 'role', 'prefix' => 'CreatorRoles::']
+                            ],
+                        ],
+                    ],
+                ];
+            }
+            return $final;
+        };
+    }
+
+    /**
      * Get default specifications for displaying data in collection-info metadata.
      *
      * @return array
@@ -67,36 +115,8 @@ class RecordDataFormatterFactory
     public function getDefaultCollectionInfoSpecs()
     {
         $spec = new RecordDataFormatter\SpecBuilder();
-        $spec->setTemplateLine(
-            'Main Authors', 'getDeduplicatedAuthors', 'data-authors.phtml',
-            [
-                'useCache' => true,
-                'labelFunction' => function ($data) {
-                    return count($data['primary']) > 1
-                        ? 'Main Authors' : 'Main Author';
-                },
-                'context' => ['type' => 'primary', 'schemaLabel' => 'author'],
-            ]
-        );
-        $spec->setTemplateLine(
-            'Corporate Authors', 'getDeduplicatedAuthors', 'data-authors.phtml',
-            [
-                'useCache' => true,
-                'labelFunction' => function ($data) {
-                    return count($data['corporate']) > 1
-                        ? 'Corporate Authors' : 'Corporate Author';
-                },
-                'context' => ['type' => 'corporate', 'schemaLabel' => 'creator'],
-            ]
-        );
-        $spec->setTemplateLine(
-            'Other Authors', 'getDeduplicatedAuthors', 'data-authors.phtml',
-            [
-                'useCache' => true,
-                'context' => [
-                    'type' => 'secondary', 'schemaLabel' => 'contributor'
-                ],
-            ]
+        $spec->setMultiLine(
+            'Authors', 'getDeduplicatedAuthors', $this->getAuthorFunction()
         );
         $spec->setLine('Summary', 'getSummary');
         $spec->setLine(
@@ -135,36 +155,8 @@ class RecordDataFormatterFactory
     {
         $spec = new RecordDataFormatter\SpecBuilder();
         $spec->setLine('Summary', 'getSummary');
-        $spec->setTemplateLine(
-            'Main Authors', 'getDeduplicatedAuthors', 'data-authors.phtml',
-            [
-                'useCache' => true,
-                'labelFunction' => function ($data) {
-                    return count($data['primary']) > 1
-                        ? 'Main Authors' : 'Main Author';
-                },
-                'context' => ['type' => 'primary', 'schemaLabel' => 'author'],
-            ]
-        );
-        $spec->setTemplateLine(
-            'Corporate Authors', 'getDeduplicatedAuthors', 'data-authors.phtml',
-            [
-                'useCache' => true,
-                'labelFunction' => function ($data) {
-                    return count($data['corporate']) > 1
-                        ? 'Corporate Authors' : 'Corporate Author';
-                },
-                'context' => ['type' => 'corporate', 'schemaLabel' => 'creator'],
-            ]
-        );
-        $spec->setTemplateLine(
-            'Other Authors', 'getDeduplicatedAuthors', 'data-authors.phtml',
-            [
-                'useCache' => true,
-                'context' => [
-                    'type' => 'secondary', 'schemaLabel' => 'contributor'
-                ],
-            ]
+        $spec->setMultiLine(
+            'Authors', 'getDeduplicatedAuthors', $this->getAuthorFunction()
         );
         $spec->setLine('Language', 'getLanguages');
         $spec->setLine(
@@ -193,52 +185,8 @@ class RecordDataFormatterFactory
         $spec->setLine(
             'Previous Title', 'getPreviousTitles', null, ['recordLink' => 'title']
         );
-        $spec->setTemplateLine(
-            'Main Authors', 'getDeduplicatedAuthors', 'data-authors.phtml',
-            [
-                'useCache' => true,
-                'labelFunction' => function ($data) {
-                    return count($data['primary']) > 1
-                        ? 'Main Authors' : 'Main Author';
-                },
-                'context' => [
-                    'type' => 'primary',
-                    'schemaLabel' => 'author',
-                    'requiredDataFields' => [
-                        ['name' => 'role', 'prefix' => 'CreatorRoles::']
-                    ]
-                ]
-            ]
-        );
-        $spec->setTemplateLine(
-            'Corporate Authors', 'getDeduplicatedAuthors', 'data-authors.phtml',
-            [
-                'useCache' => true,
-                'labelFunction' => function ($data) {
-                    return count($data['corporate']) > 1
-                        ? 'Corporate Authors' : 'Corporate Author';
-                },
-                'context' => [
-                    'type' => 'corporate',
-                    'schemaLabel' => 'creator',
-                    'requiredDataFields' => [
-                        ['name' => 'role', 'prefix' => 'CreatorRoles::']
-                    ]
-                ]
-            ]
-        );
-        $spec->setTemplateLine(
-            'Other Authors', 'getDeduplicatedAuthors', 'data-authors.phtml',
-            [
-                'useCache' => true,
-                'context' => [
-                    'type' => 'secondary',
-                    'schemaLabel' => 'contributor',
-                    'requiredDataFields' => [
-                        ['name' => 'role', 'prefix' => 'CreatorRoles::']
-                    ]
-                ],
-            ]
+        $spec->setMultiLine(
+            'Authors', 'getDeduplicatedAuthors', $this->getAuthorFunction()
         );
         $spec->setLine(
             'Format', 'getFormats', 'RecordHelper',

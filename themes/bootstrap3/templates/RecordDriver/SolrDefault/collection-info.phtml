@@ -43,11 +43,12 @@
       $formatter = $this->recordDataFormatter();
       $fields = $formatter->getData($driver, $formatter->getDefaults('collection-info'));
     ?>
-    <? if (!empty($fields)): ?>
-      <table id="collectionInfo" class="table table-striped" summary="<?=$this->transEsc('Bibliographic Details')?>">
-        <? foreach ($fields as $key => $current): ?>
-          <tr><th><?=$this->transEsc($key)?>:</th><td><?=$current['value']?></td></tr>
-        <? endforeach; ?>
+    <?php if (!empty($fields)): ?>
+      <table id="collectionInfo" class="table table-striped">
+        <caption class="sr-only"><?=$this->transEsc('Bibliographic Details')?></caption>
+        <?php foreach ($fields as $current): ?>
+          <tr><th><?=$this->transEsc($current['label'])?>:</th><td><?=$current['value']?></td></tr>
+        <?php endforeach; ?>
       </table>
     <? endif; ?>
     <?/* End Main Details */?>
