@@ -16,3 +16,7 @@ import/solrmarc.log*
 lessphp_*.list
 node_modules
 public/swagger-ui
+
+# RS: Ignore localhost files
+Vagrantfile
+env.bat

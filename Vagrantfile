@@ -22,6 +22,7 @@ Vagrant.configure("2") do |config|
     # Customize the amount of resources on the VM:
     vb.cpus = 2
     vb.memory = "2048"
+    vb.customize [ "modifyvm", :id, "--uartmode1", "disconnected" ]
   end
 
   # Network configuration to forward ports.
